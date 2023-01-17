@@ -1,6 +1,8 @@
 from playsound import playsound
 import speech_recognition as sr 
-from googletrans import Translator 
+from googletrans import Translator
+from gtts import gTTS
+
 
 dic=('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am', 
      'arabic', 'ar', 'armenian', 'hy', 'azerbaijani', 'az',
@@ -50,40 +52,52 @@ to_lang = dic[dic.index(langInput.lower())+1]
 currentvoiceNumber = 0
 
 while True:
-    # Capture Voice
-    # takes command through microphone
-    currentvoiceNumber = currentvoiceNumber + 1
+   # Capture Voice
+   # takes command through microphone
+   currentvoiceNumber = currentvoiceNumber + 1
 
-    def takecommand():
-        r = sr.Recognizer()
-        with sr.Microphone() as source:
-            print("listening.....")
-            r.pause_threshold = 1
-            audio = r.listen(source)
-    
-        try:
-            print("Recognizing.....")
-            query = r.recognize_google(audio, language='en-in')
-            print(f"user said {query}\n")
-        except Exception as e:
-            print("say that again please.....")
-            return "None"
-        return query
-
-
-    # Taking voice input from the user
-    query = takecommand()
-    while (query == "None"):
-        query = takecommand()
+   def takecommand():
+      r = sr.Recognizer()
+      with sr.Microphone() as source:
+         print("listening.....")
+         r.pause_threshold = 1
+         audio = r.listen(source)
+   
+      try:
+         print("Recognizing.....")
+         query = r.recognize_google(audio, language='en-in')
+         print(f"user said {query}\n")
+      except Exception as e:
+         print("say that again please.....")
+         return "None"
+      return query
 
 
+   # Taking voice input from the user
+   query = takecommand()
+   while (query == "None"):
+      query = takecommand()
 
-    # invoking Translator
-    translator = Translator()
 
-    # Translating from src to dest
-    text_to_translate = translator.translate(query, dest=to_lang)
-    text = text_to_translate.text
+
+   # invoking Translator
+   translator = Translator()
+
+   # Translating from src to dest
+   text_to_translate = translator.translate(query, dest=to_lang)
+   text = text_to_translate.text
+
+   
+   speak = gTTS(text=text, lang=to_lang, slow=False)
+   
+   # Using save() method to save the translated
+   # speech in capture_voice.mp3
+   filename = 'captured_voice' + str(currentvoiceNumber) + '.mp3'
+   speak.save(filename)
+   
+   # Using OS module to run the translated voice.
+   playsound(filename)
+   # os.remove(filename)
 
 
     
