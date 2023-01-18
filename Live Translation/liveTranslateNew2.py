@@ -2,6 +2,8 @@ from playsound import playsound
 import speech_recognition as sr 
 from googletrans import Translator
 from gtts import gTTS
+import time
+import os
 
 
 dic=('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am', 
@@ -94,11 +96,13 @@ while True:
    # speech in capture_voice.mp3
    filename = 'captured_voice' + str(currentvoiceNumber) + '.mp3'
    speak.save(filename)
+
+   audio_file = os.path.dirname(__file__) + "\\" + filename
    
    # Using OS module to run the translated voice.
-   playsound(filename)
+   playsound(audio_file)
    # os.remove(filename)
-
+   time.sleep(1)
 
     
       
