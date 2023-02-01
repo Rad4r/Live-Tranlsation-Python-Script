@@ -55,6 +55,7 @@ def TranslateVoice(to_lang='en'):
 
         audio_file = os.path.dirname(__file__) + "\\" + filename
 
+        # time.sleep(1)
         # Using OS module to run the translated voice.
         playsound(audio_file)
         # os.remove(filename)
@@ -66,6 +67,7 @@ def DisableAllButtons():
     GermanButton["state"] = "disable"
     ChineseButton["state"] = "disable"
     FrenchButton["state"] = "disable"
+    RussianButton["state"] = "disable"
 
 
 def SetNewLang(name, code):
@@ -92,10 +94,13 @@ ChineseButton = tk.Button(root, text="Chinese",
                           command=partial(SetNewLang, "Chinese", "zh-cn"))
 FrenchButton = tk.Button(
     root, text="French", command=partial(SetNewLang, "French", "fr"))
+RussianButton = tk.Button(
+    root, text="Russian", command=partial(SetNewLang, "Russian", "ru"))
 DutchButton.pack(pady=10)
 GermanButton.pack(pady=10)
 ChineseButton.pack(pady=10)
 FrenchButton.pack(pady=10)
+RussianButton.pack(pady=10)
 
 label = tk.Label(root)
 label.pack(pady=10)

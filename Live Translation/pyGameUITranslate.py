@@ -8,7 +8,8 @@ import pygame
 import pygame_gui
 from functools import partial
 import threading
-# from threading import Timer
+from threading import Timer
+import keyboard
 
 
 def TranslateVoice(to_lang='en'):
@@ -16,59 +17,88 @@ def TranslateVoice(to_lang='en'):
     currentvoiceNumber = 0
     # Mayeb do something other than while loop?
 
-    # while True:
-    #     # Capture Voice
-    #     # takes command through microphone
-    #     currentvoiceNumber = currentvoiceNumber + 1
+    while True:
+        # Capture Voice
+        # takes command through microphone
+        currentvoiceNumber = currentvoiceNumber + 1
 
-    #     def takecommand():
-    #         r = sr.Recognizer()
-    #         with sr.Microphone() as source:
-    #             print("listening.....")
-    #             r.pause_threshold = 1
-    #             audio = r.listen(source)
+        if keyboard.is_pressed("q"):
+            print("q pressed, ending loop")
+            break
 
-    #         try:
-    #             print("Recognizing.....")
-    #             query = r.recognize_google(audio, language='en-in')
-    #             print(f"user said {query}\n")
-    #         except Exception as e:
-    #             print("say that again please.....")
-    #             return "None"
-    #         return query
+        def takecommand():
+            r = sr.Recognizer()
+            with sr.Microphone() as source:
+                print("listening.....")
+                listeningText.text = "listening....."
+                threading.Thread(target=listeningText.rebuild,
+                                 daemon=True).start()
+                r.pause_threshold = 1
+                audio = r.listen(source)
 
-    #     # Taking voice input from the user
-    #     query = takecommand()
-    #     while (query == "None"):
-    #         query = takecommand()
+            try:
+                print("Recognizing.....")
+                listeningText.text = "Recognizing....."
+                threading.Thread(target=listeningText.rebuild,
+                                 daemon=True).start()
+                query = r.recognize_google(audio, language='en-in')
+                print(f"user said {query}\n")
+                # transcribeText.html_text = text
+                # transcribeText.rebuild()
+            except Exception as e:
+                print("say that again please.....")
+                listeningText.text = "say that again please....."
+                threading.Thread(target=listeningText.rebuild,
+                                 daemon=True).start()
+                return "None"
+            return query
 
-    #     # invoking Translator
-    #     translator = Translator()
+        # Taking voice input from the user
+        query = takecommand()
+        while (query == "None"):
+            query = takecommand()
 
-    #     # Translating from src to dest
-    #     text_to_translate = translator.translate(query, dest=to_lang)
-    #     text = text_to_translate.text
+        # invoking Translator
+        transcribeText.html_text = query
+        threading.Thread(target=transcribeText.rebuild, daemon=True).start()
+        listeningText.text = "Translating....."
+        threading.Thread(target=listeningText.rebuild, daemon=True).start()
+        translator = Translator()
 
-    #     speak = gTTS(text=text, lang=to_lang, slow=False)
+        # Translating from src to dest
+        text_to_translate = translator.translate(query, dest=to_lang)
+        text = text_to_translate.text
+        translationText.html_text = text
+        threading.Thread(target=translationText.rebuild, daemon=True).start()
 
-    #     # Using save() method to save the translated
-    #     # speech in capture_voice.mp3
-    #     filename = 'captured_voice' + str(currentvoiceNumber) + '.mp3'
-    #     speak.save(filename)
+        speak = gTTS(text=text, lang=to_lang, slow=False)
 
-    #     audio_file = os.path.dirname(__file__) + "\\" + filename
+        # Using save() method to save the translated
+        # speech in capture_voice.mp3
+        filename = 'captured_voice.mp3'
+        speak.save(filename)
 
-    #     # Using OS module to run the translated voice.
-    #     playsound(audio_file)
-    #     # os.remove(filename)
-    #     time.sleep(1)
+        audio_file = os.path.dirname(__file__) + "\\" + filename
+
+        # Using OS module to run the translated voice.
+        # time.sleep(1)
+        print("playing audio file")
+        playsound(audio_file)
+        # threading.Thread(target=playsound(audio_file), daemon=True).start()
+        time.sleep(1)
+        # os.remove(audio_file)
 
 
 def SetNewLang(name, code):
+    # languageSelected = False
     print("language set to " + name + " with code " + code)
     chosenLanguageLabel.text = 'Chosen Languange: ' + name  # not working?
-    # t = Timer(.1, partial(TranslateVoice, code))
-    # t.start()
+    threading.Thread(target=chosenLanguageLabel.rebuild, daemon=True).start()
+    # threading.Thread(target=SetNewLang, args=(
+    #     "Dutch", 'nl'), daemon=True).start()
+    # Timer(.1, chosenLanguageLabel.rebuild).start()
+    t = Timer(.1, partial(TranslateVoice, code))
+    t.start()
     # TranslateVoice(to_lang = code)
 
 
@@ -84,7 +114,7 @@ manager = pygame_gui.UIManager((800, 600), 'theme.json')
 # push to talk
 
 chosenLanguageLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect(
-    (300, 0), (200, 50)), text='Chosen Language: English')
+    (300, 0), (250, 50)), text='Chosen Language: English')
 translationText = pygame_gui.elements.UILabel(relative_rect=pygame.Rect(
     (150, 50), (500, 50)), text='Choose a laguage you want to translate to')
 
@@ -146,6 +176,7 @@ while is_running:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == dutch_button:
                 SetNewLang("Dutch", 'nl')
+                # print("language set to " + dutch_button.text)
                 # threading.Thread(target=SetNewLang, args=("Dutch", 'nl'), daemon=True).start()
             if event.ui_element == danish_button:
                 SetNewLang("Danish", 'da')
